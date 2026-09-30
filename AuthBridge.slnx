@@ -13,6 +13,7 @@
     <Project Path="tests/AuthBridge.UnitTests/AuthBridge.UnitTests.csproj" />
   </Folder>
   <Folder Name="/tools/">
+    <Project Path="tools/AuthBridge.DbTool/AuthBridge.DbTool.csproj" />
     <Project Path="tools/AuthBridge.SmokeClient/AuthBridge.SmokeClient.csproj" />
   </Folder>
 </Solution>

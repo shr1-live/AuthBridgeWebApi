@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Operator tool: migrate, seed, export/import and access grants. It carries migration
+       assemblies and runs with owner credentials, so it is not part of the runtime image. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\AuthBridge.Infrastructure\AuthBridge.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\AuthBridge.Migrations.SqlServer\AuthBridge.Migrations.SqlServer.csproj" />
+    <ProjectReference Include="..\..\src\AuthBridge.Migrations.Postgres\AuthBridge.Migrations.Postgres.csproj" />
+  </ItemGroup>
+
+</Project>
