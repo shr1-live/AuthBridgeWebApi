@@ -1,10 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -27,6 +23,7 @@
     <ProjectReference Include="..\..\src\AuthBridge.Api\AuthBridge.Api.csproj" />
     <ProjectReference Include="..\..\src\AuthBridge.Migrations.SqlServer\AuthBridge.Migrations.SqlServer.csproj" />
     <ProjectReference Include="..\..\src\AuthBridge.Migrations.Postgres\AuthBridge.Migrations.Postgres.csproj" />
+    <ProjectReference Include="..\..\tools\AuthBridge.SmokeClient\AuthBridge.SmokeClient.csproj" />
   </ItemGroup>
 
 </Project>

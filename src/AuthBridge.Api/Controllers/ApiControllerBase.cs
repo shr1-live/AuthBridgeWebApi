@@ -13,7 +13,6 @@ namespace AuthBridge.Api.Controllers;
 /// </summary>
 [ApiController]
 [Authorize]
-[Produces("application/json")]
 public abstract class ApiControllerBase : ControllerBase
 {
     protected async Task<IActionResult> Run<T>(Func<CallerContext, CancellationToken, Task<Result<T>>> operation,
