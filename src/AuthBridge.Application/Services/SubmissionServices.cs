@@ -145,7 +145,7 @@ public sealed class SubmissionProposalService(IAuthBridgeStore store, TimeProvid
     }
 }
 
-public sealed class SubmissionService(IAuthBridgeStore store, TimeProvider time, IOptions<SimulationOptions> simulation)
+public sealed class SubmissionService(IAuthBridgeStore store, TimeProvider time, IOptions<SimulationOptions> simulation, ISimulationSignal signal)
     : ISubmissionService
 {
     private const string Operation = "Submit";
@@ -240,6 +240,7 @@ public sealed class SubmissionService(IAuthBridgeStore store, TimeProvider time,
                 : Errors.VersionConflict();
         }
 
+        signal.Notify();
         return Mapping.ToSubmission(attempt, request, isReplay: false);
     }
 

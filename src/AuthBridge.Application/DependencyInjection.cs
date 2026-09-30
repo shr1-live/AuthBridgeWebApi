@@ -10,6 +10,7 @@ public static class DependencyInjection
     public static IServiceCollection AddAuthBridgeApplication(this IServiceCollection services, IConfiguration configuration)
     {
         services.TryAddSingleton(TimeProvider.System);
+        services.TryAddSingleton<ISimulationSignal, NoSimulationSignal>();
         services.Configure<WorkflowOptions>(configuration.GetSection(WorkflowOptions.Section));
         services.Configure<SimulationOptions>(configuration.GetSection(SimulationOptions.Section));
 

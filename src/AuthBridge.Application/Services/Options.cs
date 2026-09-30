@@ -26,5 +26,5 @@ public sealed class SimulationOptions
 
     public TimeSpan IdlePollInitial { get; set; } = TimeSpan.FromSeconds(5);
 
-    public TimeSpan IdlePollMax { get; set; } = TimeSpan.FromSeconds(60);
+    public TimeSpan IdlePollMax { get; set; } = TimeSpan.FromSeconds(15);
 }

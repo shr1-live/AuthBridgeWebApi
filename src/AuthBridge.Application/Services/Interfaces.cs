@@ -60,3 +60,14 @@ public interface IPayerSimulationService
     /// <summary>Advances one due attempt by one persisted step. Returns false when nothing was due.</summary>
     Task<bool> ProcessNextAsync(SimulationContext context, CancellationToken ct);
 }
+
+/// <summary>Wakes the in-process simulator after a submission; a no-op where no worker runs.</summary>
+public interface ISimulationSignal
+{
+    void Notify();
+}
+
+public sealed class NoSimulationSignal : ISimulationSignal
+{
+    public void Notify() { }
+}
