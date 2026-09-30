@@ -19,6 +19,9 @@ if (Environment.GetEnvironmentVariable("PORT") is { Length: > 0 } port)
 
 builder.Services.Configure<HostOptions>(o => o.ShutdownTimeout = TimeSpan.FromSeconds(20));
 
+// Report every missing setting at once, before anything reads them.
+StartupConfiguration.Validate(builder.Configuration);
+
 builder.Services.AddAuthBridgeApplication(builder.Configuration);
 builder.Services.AddAuthBridgePersistence(builder.Configuration);
 var authMode = builder.AddAuthBridgeAuthentication();

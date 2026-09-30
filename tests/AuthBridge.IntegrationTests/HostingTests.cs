@@ -82,6 +82,20 @@ public class HostingTests(DatabaseProvider provider) : ProviderFixture(provider)
     }
 
     [Test]
+    public void Startup_lists_every_missing_setting_at_once()
+    {
+        using var app = new EmptyConfigApp();
+        var message = Assert.Catch(() => app.CreateClient())!.GetBaseException().Message;
+        Assert.Multiple(() =>
+        {
+            Assert.That(message, Does.Contain("Database__Provider"));
+            Assert.That(message, Does.Contain("Database__ConnectionString"));
+            Assert.That(message, Does.Contain("Auth__Supabase__Issuer"));
+            Assert.That(message, Does.Contain("Auth__Supabase__JwksUri"));
+        });
+    }
+
+    [Test]
     public void Wildcard_cors_origin_fails_startup()
     {
         using var app = new WildcardCorsApp(Database);
@@ -108,6 +122,16 @@ public class HostingTests(DatabaseProvider provider) : ProviderFixture(provider)
         {
             builder.UseEnvironment("Testing");
             builder.UseSetting("Database:Provider", "");
+            builder.UseSetting("Simulation:Enabled", "false");
+        }
+    }
+
+    /// <summary>Like a fresh Render service with no environment variables: base appsettings only.</summary>
+    private sealed class EmptyConfigApp : WebApplicationFactory<Program>
+    {
+        protected override void ConfigureWebHost(IWebHostBuilder builder)
+        {
+            builder.UseEnvironment("Production");
             builder.UseSetting("Simulation:Enabled", "false");
         }
     }
