@@ -29,6 +29,9 @@ public sealed class EfAuthBridgeStore(AuthBridgeDbContext db) : IAuthBridgeStore
         var total = await query.CountAsync(ct);
         var items = await query
             .Include(r => r.Member)
+            .Include(r => r.Documents)
+            .Include(r => r.RequirementSet).ThenInclude(s => s!.RequiredDocuments)
+            .AsSplitQuery()
             .OrderBy(r => r.PublicId)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)

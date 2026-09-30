@@ -109,6 +109,8 @@ public static class SeedData
     {
         var s = new SeedSnapshot();
 
+        // Synthetic member codes, deliberately not name-like.
+        string[] memberCodes = ["SYN-2904", "SYN-6612", "SYN-3388", "SYN-4471", "SYN-5120", "SYN-7731"];
         for (var i = 1; i <= 6; i++)
         {
             var tenant = i <= 3 ? SeedUsers.TenantA : SeedUsers.TenantB;
@@ -116,7 +118,7 @@ public static class SeedData
             {
                 Id = SeedIds.For("member:" + i),
                 TenantId = tenant,
-                DisplayLabel = $"Synthetic Member {(i <= 3 ? "A" : "B")}-{(i - 1) % 3 + 1:00}",
+                DisplayLabel = memberCodes[i - 1],
             });
         }
 

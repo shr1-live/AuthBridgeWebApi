@@ -13,7 +13,9 @@ public sealed record AuthorizationSummaryDto(
     string ServiceCode,
     string MemberLabel,
     Guid Version,
-    DateTimeOffset UpdatedAtUtc);
+    DateTimeOffset UpdatedAtUtc,
+    int RequiredDocumentCount,
+    int ValidDocumentCount);
 
 public sealed record RuleReferenceDto(Guid RequirementSetId, string PayerCode, string ServiceCode, string RuleVersion, bool IsActive, bool IsDemo);
 

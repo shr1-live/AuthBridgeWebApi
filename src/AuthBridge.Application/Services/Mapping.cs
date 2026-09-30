@@ -8,8 +8,13 @@ namespace AuthBridge.Application.Services;
 
 internal static class Mapping
 {
-    public static AuthorizationSummaryDto ToSummary(AuthorizationRequest r) =>
-        new(r.PublicId, DtoText.Of(r.Status), r.PayerCode, r.ServiceCode, r.Member?.DisplayLabel ?? "", r.Version, r.UpdatedAtUtc);
+    public static AuthorizationSummaryDto ToSummary(AuthorizationRequest r)
+    {
+        var required = r.RequirementSet?.RequiredDocuments.Select(d => d.DocumentType).ToHashSet(StringComparer.Ordinal) ?? [];
+        var valid = r.Documents.Count(d => d.IsValid && required.Contains(d.DocumentType));
+        return new(r.PublicId, DtoText.Of(r.Status), r.PayerCode, r.ServiceCode, r.Member?.DisplayLabel ?? "", r.Version,
+            r.UpdatedAtUtc, required.Count, valid);
+    }
 
     public static RuleReferenceDto ToRule(RequirementSet s) =>
         new(s.Id, s.PayerCode, s.ServiceCode, s.RuleVersion, s.IsActive, s.IsDemo);

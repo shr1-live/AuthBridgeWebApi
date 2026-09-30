@@ -87,6 +87,21 @@ public class QueryAndDocumentTests(DatabaseProvider provider) : ProviderFixture(
             Is.EquivalentTo(new[] { "AUTH-103", "AUTH-105", "AUTH-106", "AUTH-110" }));
     }
 
+    [Test]
+    public async Task List_rows_carry_document_progress_and_synthetic_member_codes()
+    {
+        var list = await (await CoordinatorA.GetAsync("/api/v1/authorizations?pageSize=100")).JsonAsync();
+        var rows = list.GetProperty("items").EnumerateArray().ToDictionary(i => i.Str("authorizationId"));
+        Assert.Multiple(() =>
+        {
+            Assert.That(rows["AUTH-104"].GetProperty("requiredDocumentCount").GetInt32(), Is.EqualTo(2));
+            Assert.That(rows["AUTH-104"].GetProperty("validDocumentCount").GetInt32(), Is.EqualTo(1));
+            Assert.That(rows["AUTH-105"].GetProperty("validDocumentCount").GetInt32(), Is.EqualTo(2));
+            Assert.That(rows["AUTH-111"].GetProperty("validDocumentCount").GetInt32(), Is.EqualTo(1), "invalid fixture does not count");
+            Assert.That(rows["AUTH-104"].Str("memberLabel"), Does.Match("^SYN-[0-9]{4}$"));
+        });
+    }
+
     [TestCase("AUTH-1044444444444444444444444444444444444")]
     [TestCase("AUTH 104")]
     [TestCase("-104")]
