@@ -1,0 +1,84 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  # Throwaway credentials for CI-only service containers; they protect nothing.
+  CI_SA_PASSWORD: Ci_Only_Throwaway_1!
+  CI_PG_PASSWORD: ci_only_throwaway
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: "Y"
+          MSSQL_SA_PASSWORD: Ci_Only_Throwaway_1!
+        ports: ["1433:1433"]
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_PASSWORD: ci_only_throwaway
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      DOTNET_NOLOGO: "1"
+      AUTHBRIDGE_TEST_SQLSERVER: Server=localhost,1433;User Id=sa;Password=Ci_Only_Throwaway_1!;TrustServerCertificate=True
+      AUTHBRIDGE_TEST_POSTGRES: Host=localhost;Port=5432;Username=postgres;Password=ci_only_throwaway
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Wait for SQL Server
+        run: |
+          for i in $(seq 1 60); do
+            (echo > /dev/tcp/localhost/1433) 2>/dev/null && break
+            sleep 2
+          done
+          sleep 10
+      - name: Restore (locked)
+        run: dotnet restore --locked-mode
+      - name: Build
+        run: dotnet build --no-restore -c Release
+      - name: Test (unit, both SQL providers, MCP over HTTP and stdio)
+        run: dotnet test --no-build -c Release --logger trx --results-directory TestResults
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: TestResults
+
+  container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build runtime image
+        run: docker build -t authbridge-api:ci .
+      - name: Image starts without LocalDB, honours PORT, refuses anonymous calls
+        run: |
+          docker network create ci
+          docker run -d --name pg --network ci -e POSTGRES_PASSWORD=$CI_PG_PASSWORD postgres:17-alpine
+          for i in $(seq 1 30); do docker exec pg pg_isready -U postgres && break; sleep 1; done
+          docker run -d --name api --network ci -p 10000:10000 -e PORT=10000 \
+            -e Database__Provider=Postgres \
+            -e "Database__ConnectionString=Host=pg;Username=postgres;Password=$CI_PG_PASSWORD" \
+            -e Auth__Mode=Supabase \
+            -e Auth__Supabase__Issuer=https://ci-placeholder.supabase.co/auth/v1 \
+            -e Auth__Supabase__JwksUri=https://ci-placeholder.supabase.co/auth/v1/.well-known/jwks.json \
+            -e Cors__AllowedOrigins__0=https://ci.example \
+            authbridge-api:ci
+          for i in $(seq 1 30); do curl -fs localhost:10000/health/live && break; sleep 1; done
+          test "$(curl -s -o /dev/null -w '%{http_code}' localhost:10000/health/ready)" = "200"
+          test "$(curl -s -o /dev/null -w '%{http_code}' localhost:10000/api/v1/authorizations)" = "401"
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST localhost:10000/mcp)" = "401"
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST localhost:10000/dev/token)" = "404"
+          test "$(docker exec api id -u)" != "0"

@@ -4,4 +4,11 @@
 **/node_modules
 **/TestResults
 .git
+.github
 .env
+*.md
+docs/
+tests/
+tools/
+src/AuthBridge.Migrations.*/
+**/appsettings.Development.json

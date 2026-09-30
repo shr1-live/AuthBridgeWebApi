@@ -52,9 +52,23 @@ public static class DependencyInjection
             DatabaseProvider.SqlServer => builder.UseSqlServer(connectionString, o => o
                 .MigrationsAssembly(SqlServerMigrationsAssembly)
                 .MigrationsHistoryTable("__EFMigrationsHistory", AuthBridgeDbContext.Schema)),
-            DatabaseProvider.Postgres => builder.UseNpgsql(connectionString, o => o
+            DatabaseProvider.Postgres => builder.UseNpgsql(WithPostgresDefaults(connectionString), o => o
                 .MigrationsAssembly(PostgresMigrationsAssembly)
                 .MigrationsHistoryTable("__EFMigrationsHistory", AuthBridgeDbContext.Schema)),
             _ => throw new ArgumentOutOfRangeException(nameof(provider)),
         };
+
+    /// <summary>
+    /// Supabase does not use GSSAPI. Npgsql otherwise probes for it on Linux, which fails
+    /// noisily in the slim runtime image and slowed the first readiness check past its
+    /// timeout. An explicit setting in the connection string still wins.
+    /// </summary>
+    public static string WithPostgresDefaults(string connectionString)
+    {
+        var builder = new Npgsql.NpgsqlConnectionStringBuilder(connectionString);
+        if (!connectionString.Contains("GSS Encryption Mode", StringComparison.OrdinalIgnoreCase)
+            && !connectionString.Contains("GssEncryptionMode", StringComparison.OrdinalIgnoreCase))
+            builder.GssEncryptionMode = Npgsql.GssEncryptionMode.Disable;
+        return builder.ConnectionString;
+    }
 }

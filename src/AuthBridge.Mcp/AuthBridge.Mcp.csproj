@@ -17,7 +17,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="appsettings*.json" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Named mcpsettings*.json so they never collide with the API host's appsettings when the
+         API references this project for the shared tool class. -->
+    <None Include="mcpsettings*.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="Never" />
   </ItemGroup>
 
 </Project>

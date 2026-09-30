@@ -20,10 +20,17 @@ public static class StdioHost
 {
     public static async Task<int> Main(string[] args)
     {
+        // mcpsettings*.json load first, so environment variables and arguments still override them.
+        var environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? Environments.Production;
+        var configuration = new ConfigurationManager();
+        configuration.SetBasePath(AppContext.BaseDirectory)
+            .AddJsonFile("mcpsettings.json", optional: false)
+            .AddJsonFile($"mcpsettings.{environment}.json", optional: true);
         var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
         {
             Args = args,
             ContentRootPath = AppContext.BaseDirectory,
+            Configuration = configuration,
         });
         builder.Logging.ClearProviders();
         builder.Logging.AddConsole(o => o.LogToStandardErrorThreshold = LogLevel.Trace);

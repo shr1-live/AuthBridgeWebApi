@@ -9,7 +9,8 @@ public sealed class DatabaseHealthCheck(AuthBridgeDbContext db) : IHealthCheck
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        timeout.CancelAfter(TimeSpan.FromSeconds(3));
+        // Bounded, with room for the first connection after a cold start.
+        timeout.CancelAfter(TimeSpan.FromSeconds(5));
         try
         {
             return await db.Database.CanConnectAsync(timeout.Token)
