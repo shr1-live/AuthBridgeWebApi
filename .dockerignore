@@ -10,5 +10,7 @@
 docs/
 tests/
 tools/
-src/AuthBridge.Migrations.*/
+# The API image runs PostgreSQL migrations on first startup. SQL Server migrations remain
+# development/test-only and do not belong in the Render image.
+src/AuthBridge.Migrations.SqlServer/
 **/appsettings.Development.json
