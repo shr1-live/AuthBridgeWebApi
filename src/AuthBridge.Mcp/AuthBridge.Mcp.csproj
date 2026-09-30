@@ -1,4 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Local stdio MCP host. The tool class is also referenced by AuthBridge.Api for the
+       hosted /mcp endpoint, so both transports expose the identical eight tools. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <StartupObject>AuthBridge.Mcp.StdioHost</StartupObject>
+  </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\AuthBridge.Infrastructure\AuthBridge.Infrastructure.csproj" />
@@ -9,10 +16,8 @@
     <PackageReference Include="ModelContextProtocol" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="appsettings*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 
 </Project>
