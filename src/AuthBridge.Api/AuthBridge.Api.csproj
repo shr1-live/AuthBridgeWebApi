@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AuthBridge.Infrastructure\AuthBridge.Infrastructure.csproj" />
+    <ProjectReference Include="..\AuthBridge.Migrations.Postgres\AuthBridge.Migrations.Postgres.csproj" />
     <!-- For the shared tool class only; the stdio host itself never runs inside the API. -->
     <ProjectReference Include="..\AuthBridge.Mcp\AuthBridge.Mcp.csproj" />
   </ItemGroup>

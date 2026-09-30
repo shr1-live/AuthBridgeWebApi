@@ -15,6 +15,8 @@ public enum AuthMode
     Supabase,
     /// <summary>Locally signed tokens for Development and automated tests only. Refused elsewhere.</summary>
     LocalDev,
+    /// <summary>Self-contained synthetic-demo tokens. May run in Production.</summary>
+    Demo,
 }
 
 public sealed class SupabaseAuthOptions
@@ -43,7 +45,7 @@ public static class AuthSetup
     {
         var section = builder.Configuration.GetSection("Auth");
         if (!Enum.TryParse<AuthMode>(section["Mode"], ignoreCase: false, out var mode) || !Enum.IsDefined(mode))
-            throw new InvalidOperationException("Auth:Mode must be 'Supabase' or 'LocalDev'.");
+            throw new InvalidOperationException("Auth:Mode must be 'Supabase', 'LocalDev' or 'Demo'.");
 
         var env = builder.Environment;
         if (mode == AuthMode.LocalDev && !(env.IsDevelopment() || env.IsEnvironment("Testing")))
@@ -57,7 +59,7 @@ public static class AuthSetup
                 options.RequireHttpsMetadata = mode == AuthMode.Supabase;
                 options.TokenValidationParameters = mode == AuthMode.Supabase
                     ? SupabaseParameters(section.GetSection("Supabase").Get<SupabaseAuthOptions>() ?? new(), options)
-                    : LocalDevParameters(section.GetSection("LocalDev").Get<LocalDevAuthOptions>() ?? new());
+                    : LocalDevParameters(section.GetSection(mode == AuthMode.Demo ? "Demo" : "LocalDev").Get<LocalDevAuthOptions>() ?? new());
                 options.Events = new JwtBearerEvents
                 {
                     OnChallenge = async context =>
@@ -70,9 +72,9 @@ public static class AuthSetup
             });
         builder.Services.AddAuthorization();
 
-        if (mode == AuthMode.LocalDev)
+        if (mode is AuthMode.LocalDev or AuthMode.Demo)
         {
-            builder.Services.Configure<LocalDevAuthOptions>(section.GetSection("LocalDev"));
+            builder.Services.Configure<LocalDevAuthOptions>(section.GetSection(mode == AuthMode.Demo ? "Demo" : "LocalDev"));
             builder.Services.AddSingleton<LocalDevTokenIssuer>();
         }
         return mode;

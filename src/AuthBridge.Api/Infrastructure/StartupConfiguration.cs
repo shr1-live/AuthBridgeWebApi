@@ -15,11 +15,11 @@ public static class StartupConfiguration
         if (provider is not ("SqlServer" or "Postgres"))
             problems.Add("Database:Provider (env Database__Provider) must be 'SqlServer' or 'Postgres' — use Postgres on Render.");
         if (string.IsNullOrWhiteSpace(configuration["Database:ConnectionString"]))
-            problems.Add("Database:ConnectionString (env Database__ConnectionString) is empty — the Supabase runtime-role connection string.");
+            problems.Add("Database:ConnectionString (env Database__ConnectionString) is empty — use the Render Postgres connection string.");
 
         var mode = configuration["Auth:Mode"];
-        if (mode is not ("Supabase" or "LocalDev"))
-            problems.Add("Auth:Mode (env Auth__Mode) must be 'Supabase' or 'LocalDev' — use Supabase when deployed.");
+        if (mode is not ("Supabase" or "LocalDev" or "Demo"))
+            problems.Add("Auth:Mode (env Auth__Mode) must be 'Supabase', 'LocalDev' or 'Demo'.");
         if (mode == "Supabase")
         {
             if (string.IsNullOrWhiteSpace(configuration["Auth:Supabase:Issuer"]))
@@ -27,6 +27,8 @@ public static class StartupConfiguration
             if (string.IsNullOrWhiteSpace(configuration["Auth:Supabase:JwksUri"]))
                 problems.Add("Auth:Supabase:JwksUri (env Auth__Supabase__JwksUri) is empty — https://<project-ref>.supabase.co/auth/v1/.well-known/jwks.json");
         }
+        if (mode == "Demo" && string.IsNullOrWhiteSpace(configuration["Auth:Demo:SigningKey"]))
+            problems.Add("Auth:Demo:SigningKey (env Auth__Demo__SigningKey) is empty — configure a generated secret on Render.");
 
         if (problems.Count > 0)
             throw new InvalidOperationException(

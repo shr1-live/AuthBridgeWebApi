@@ -9,6 +9,7 @@ COPY global.json Directory.Build.props Directory.Packages.props ./
 COPY src/AuthBridge.Domain/ src/AuthBridge.Domain/
 COPY src/AuthBridge.Application/ src/AuthBridge.Application/
 COPY src/AuthBridge.Infrastructure/ src/AuthBridge.Infrastructure/
+COPY src/AuthBridge.Migrations.Postgres/ src/AuthBridge.Migrations.Postgres/
 COPY src/AuthBridge.Mcp/ src/AuthBridge.Mcp/
 COPY src/AuthBridge.Api/ src/AuthBridge.Api/
 RUN dotnet restore src/AuthBridge.Api/AuthBridge.Api.csproj --locked-mode

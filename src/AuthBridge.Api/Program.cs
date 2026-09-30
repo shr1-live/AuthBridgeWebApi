@@ -6,7 +6,10 @@ using AuthBridge.Application;
 using AuthBridge.Application.Common;
 using AuthBridge.Application.Services;
 using AuthBridge.Infrastructure;
+using AuthBridge.Infrastructure.Persistence;
+using AuthBridge.Infrastructure.Seeding;
 using AuthBridge.Mcp.Tools;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Mvc;
 using ModelContextProtocol.Protocol;
@@ -58,6 +61,15 @@ if (builder.Configuration.GetValue("Simulation:Enabled", true))
 
 var app = builder.Build();
 
+if (authMode == AuthMode.Demo)
+{
+    await using var scope = app.Services.CreateAsyncScope();
+    var db = scope.ServiceProvider.GetRequiredService<AuthBridgeDbContext>();
+    await db.Database.MigrateAsync();
+    if (!await DatabaseSeeder.HasDataAsync(db, CancellationToken.None))
+        await DatabaseSeeder.SeedAsync(db, TimeProvider.System, CancellationToken.None);
+}
+
 app.UseSafeExceptionHandler();
 app.UseCorrelation();
 app.Use(async (context, next) =>
@@ -85,6 +97,10 @@ if (authMode == AuthMode.LocalDev && app.Environment.IsDevelopment())
 {
     app.MapLocalDevAuth();
     app.MapOpenApi();
+}
+else if (authMode == AuthMode.Demo)
+{
+    app.MapLocalDevAuth("/demo");
 }
 
 app.Run();

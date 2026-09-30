@@ -1,8 +1,5 @@
-# Render Blueprint for the AuthBridge backend: ONE free Docker web service that hosts the
-# controller API, the authenticated /mcp endpoint and the payer simulator.
-# Nothing here deploys by itself; applying the Blueprint is a manual step (docs/DEPLOYMENT.md).
-# Values marked sync: false are secrets or project-specific and are entered in the Render
-# dashboard - never committed.
+# Render Blueprint for the self-contained AuthBridge demo. Render hosts both the API and its
+# PostgreSQL database; no Supabase or other external integration is required.
 services:
   - type: web
     name: authbridge-api
@@ -11,7 +8,7 @@ services:
     dockerfilePath: ./Dockerfile
     dockerContext: .
     healthCheckPath: /health/ready
-    autoDeploy: false
+    autoDeploy: true
     envVars:
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
@@ -20,17 +17,17 @@ services:
       # Runtime-role connection string copied from the Supabase project (session pooler if the
       # direct IPv6 host is unreachable from Render). Not the migration/owner credentials.
       - key: Database__ConnectionString
-        sync: false
+        fromDatabase:
+          name: authbridge-db
+          property: connectionString
       - key: Auth__Mode
-        value: Supabase
-      # https://<project-ref>.supabase.co/auth/v1
-      - key: Auth__Supabase__Issuer
-        sync: false
-      # https://<project-ref>.supabase.co/auth/v1/.well-known/jwks.json
-      - key: Auth__Supabase__JwksUri
-        sync: false
-      - key: Auth__Supabase__Audience
+        value: Demo
+      - key: Auth__Demo__Issuer
+        value: authbridge-render-demo
+      - key: Auth__Demo__Audience
         value: authenticated
+      - key: Auth__Demo__SigningKey
+        generateValue: true
       # Exact Vercel production origin, e.g. https://authbridge-ui.vercel.app
       - key: Cors__AllowedOrigins__0
         sync: false
@@ -38,3 +35,9 @@ services:
         sync: false
       - key: Simulation__Enabled
         value: "true"
+
+databases:
+  - name: authbridge-db
+    plan: free
+    databaseName: authbridge
+    user: authbridge

@@ -263,6 +263,12 @@
           "ModelContextProtocol": "[2.2.0, )"
         }
       },
+      "authbridge.migrations.postgres": {
+        "type": "Project",
+        "dependencies": {
+          "AuthBridge.Infrastructure": "[1.0.0, )"
+        }
+      },
       "Microsoft.EntityFrameworkCore": {
         "type": "CentralTransitive",
         "requested": "[10.0.12, )",

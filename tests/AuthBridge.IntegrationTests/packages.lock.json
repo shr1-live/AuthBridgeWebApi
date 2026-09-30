@@ -744,6 +744,7 @@
         "dependencies": {
           "AuthBridge.Infrastructure": "[1.0.0, )",
           "AuthBridge.Mcp": "[1.0.0, )",
+          "AuthBridge.Migrations.Postgres": "[1.0.0, )",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "[10.0.12, )",
           "Microsoft.AspNetCore.OpenApi": "[10.0.12, )",
           "ModelContextProtocol.AspNetCore": "[2.2.0, )"

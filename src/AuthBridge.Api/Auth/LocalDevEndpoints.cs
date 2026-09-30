@@ -12,9 +12,9 @@ public sealed record DevTokenRequest(string SubjectId);
 /// </summary>
 public static class LocalDevEndpoints
 {
-    public static void MapLocalDevAuth(this WebApplication app)
+    public static void MapLocalDevAuth(this WebApplication app, string prefix = "/dev")
     {
-        var group = app.MapGroup("/dev").RequireCors(CorsSetup.PolicyName);
+        var group = app.MapGroup(prefix).RequireCors(CorsSetup.PolicyName);
 
         group.MapGet("/users", async (AuthBridgeDbContext db, CancellationToken ct) =>
             await db.UserAccess.AsNoTracking().OrderBy(u => u.TenantId).ThenBy(u => u.DisplayLabel)
@@ -24,7 +24,7 @@ public static class LocalDevEndpoints
         group.MapPost("/token", async (DevTokenRequest body, AuthBridgeDbContext db, LocalDevTokenIssuer issuer, CancellationToken ct) =>
         {
             if (string.IsNullOrWhiteSpace(body.SubjectId) || !await db.UserAccess.AnyAsync(u => u.SubjectId == body.SubjectId, ct))
-                return Results.Problem(statusCode: 400, title: "INVALID_INPUT", detail: "Unknown development subject.");
+                return Results.Problem(statusCode: 400, title: "INVALID_INPUT", detail: "Unknown demo subject.");
             var lifetime = TimeSpan.FromMinutes(30);
             return Results.Ok(new { accessToken = issuer.Issue(body.SubjectId, lifetime), expiresIn = (int)lifetime.TotalSeconds, tokenType = "bearer" });
         });
