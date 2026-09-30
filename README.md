@@ -13,6 +13,8 @@ deployment. Users sign in with Supabase Auth, and the API validates their access
 No real payer, patient or clinical data is involved. Approvals and denials are simulated from
 fixture scenarios.
 
+New to MCP? Start with **[How the AuthBridge MCP works (simple English)](docs/HOW_MCP_WORKS.md)**.
+
 ## Quick start (Windows)
 
 Requires the .NET SDK 10.0.302+ (pinned in `global.json`) and SQL Server LocalDB. Docker is
@@ -79,7 +81,7 @@ docker run -p 10000:10000 -e PORT=10000 -e Database__Provider=Postgres -e Databa
 
 ## Documentation
 
-[Architecture](docs/ARCHITECTURE.md) · [API contracts](docs/API_CONTRACTS.md) ·
+[How MCP works (simple English)](docs/HOW_MCP_WORKS.md) · [Architecture](docs/ARCHITECTURE.md) · [API contracts](docs/API_CONTRACTS.md) ·
 [MCP tool contracts](docs/TOOL_CONTRACTS.md) · [Deployment](docs/DEPLOYMENT.md) ·
 [Database migration](docs/DATABASE_MIGRATION.md) · [Demo](docs/DEMO.md) ·
 [Verification evidence](docs/VERIFICATION.md) · [Environment](docs/ENVIRONMENT.md)
