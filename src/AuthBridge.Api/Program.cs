@@ -23,6 +23,11 @@ if (Environment.GetEnvironmentVariable("PORT") is { Length: > 0 } port)
 builder.Services.Configure<HostOptions>(o => o.ShutdownTimeout = TimeSpan.FromSeconds(20));
 
 // Report every missing setting at once, before anything reads them.
+if (string.IsNullOrWhiteSpace(builder.Configuration["Database:ConnectionString"]))
+    builder.Configuration["Database:ConnectionString"] = builder.Configuration["DATABASE_URL"];
+if (string.IsNullOrWhiteSpace(builder.Configuration["Database:Provider"])
+    && AuthBridge.Infrastructure.DependencyInjection.IsPostgresUrl(builder.Configuration["Database:ConnectionString"] ?? ""))
+    builder.Configuration["Database:Provider"] = "Postgres";
 StartupConfiguration.Validate(builder.Configuration);
 
 builder.Services.AddAuthBridgeApplication(builder.Configuration);

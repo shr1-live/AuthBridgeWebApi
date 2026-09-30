@@ -90,8 +90,7 @@ public class HostingTests(DatabaseProvider provider) : ProviderFixture(provider)
         {
             Assert.That(message, Does.Contain("Database__Provider"));
             Assert.That(message, Does.Contain("Database__ConnectionString"));
-            Assert.That(message, Does.Contain("Auth__Supabase__Issuer"));
-            Assert.That(message, Does.Contain("Auth__Supabase__JwksUri"));
+            Assert.That(message, Does.Contain("Auth__Demo__SigningKey"));
         });
     }
 
