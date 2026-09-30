@@ -1,0 +1,18 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/AuthBridge.Api/AuthBridge.Api.csproj" />
+    <Project Path="src/AuthBridge.Application/AuthBridge.Application.csproj" />
+    <Project Path="src/AuthBridge.Domain/AuthBridge.Domain.csproj" />
+    <Project Path="src/AuthBridge.Infrastructure/AuthBridge.Infrastructure.csproj" />
+    <Project Path="src/AuthBridge.Mcp/AuthBridge.Mcp.csproj" />
+    <Project Path="src/AuthBridge.Migrations.Postgres/AuthBridge.Migrations.Postgres.csproj" />
+    <Project Path="src/AuthBridge.Migrations.SqlServer/AuthBridge.Migrations.SqlServer.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/AuthBridge.IntegrationTests/AuthBridge.IntegrationTests.csproj" />
+    <Project Path="tests/AuthBridge.UnitTests/AuthBridge.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/AuthBridge.SmokeClient/AuthBridge.SmokeClient.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,11 @@
+bin/
+obj/
+.vs/
+*.user
+artifacts/
+TestResults/
+
+# Never commit real configuration - .env.example documents the shape instead.
+.env
+appsettings.Development.local.json
+appsettings.Production.json
