@@ -57,7 +57,9 @@ public static class DependencyInjection
             DatabaseProvider.Postgres => builder.UseNpgsql(WithPostgresDefaults(connectionString), o => o
                 .MigrationsAssembly(PostgresMigrationsAssembly)
                 .MigrationsHistoryTable("__EFMigrationsHistory", AuthBridgeDbContext.Schema)),
-            DatabaseProvider.Sqlite => builder.UseSqlite(connectionString),
+            DatabaseProvider.Sqlite => builder.UseSqlite(connectionString)
+                // SQLite has no schemas; the "authbridge" schema is simply dropped for the demo file.
+                .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.SqliteEventId.SchemaConfiguredWarning)),
             _ => throw new ArgumentOutOfRangeException(nameof(provider)),
         };
 

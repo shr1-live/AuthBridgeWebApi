@@ -23,7 +23,7 @@ variables** starts on its own:
   sleeps**.
 - CORS also accepts `https://*.vercel.app` and localhost.
 
-The Vercel build defaults to `https://authbridge-api.onrender.com`. If the Render URL differs,
+The Vercel build defaults to `https://authbridgewebapi.onrender.com`. If the Render URL differs,
 set `NG_APP_API_BASE_URL`, or enter the URL on the sign-in page. Synthetic data only. The
 Supabase path below is the real deployment: set `Auth__Mode=Supabase` and its settings.
 
