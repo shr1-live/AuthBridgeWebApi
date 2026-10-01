@@ -82,3 +82,10 @@ jobs:
           test "$(curl -s -o /dev/null -w '%{http_code}' -X POST localhost:10000/mcp)" = "401"
           test "$(curl -s -o /dev/null -w '%{http_code}' -X POST localhost:10000/dev/token)" = "404"
           test "$(docker exec api id -u)" != "0"
+      - name: Image with no settings starts as the synthetic demo
+        run: |
+          docker run -d --name demo -p 10001:10000 -e PORT=10000 authbridge-api:ci
+          for i in $(seq 1 30); do curl -fs localhost:10001/health/live && break; sleep 1; done
+          test "$(curl -s -o /dev/null -w '%{http_code}' localhost:10001/health/ready)" = "200"
+          curl -fs localhost:10001/demo/users | grep -q TENANT-A
+          test "$(curl -s -o /dev/null -w '%{http_code}' localhost:10001/dev/users)" = "404"

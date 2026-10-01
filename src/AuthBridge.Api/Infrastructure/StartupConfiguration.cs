@@ -12,8 +12,10 @@ public static class StartupConfiguration
         var problems = new List<string>();
 
         var provider = configuration["Database:Provider"];
-        if (provider is not ("SqlServer" or "Postgres"))
+        if (provider is not ("SqlServer" or "Postgres" or "Sqlite"))
             problems.Add("Database:Provider (env Database__Provider) must be 'SqlServer' or 'Postgres' — use Postgres on Render.");
+        if (provider == "Sqlite" && configuration["Auth:Mode"] != "Demo")
+            problems.Add("Database:Provider 'Sqlite' is only for the ephemeral synthetic demo (Auth:Mode=Demo).");
         if (string.IsNullOrWhiteSpace(configuration["Database:ConnectionString"]))
             problems.Add("Database:ConnectionString (env Database__ConnectionString) is empty — use the Render Postgres connection string.");
 

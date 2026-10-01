@@ -9,6 +9,24 @@ Vercel or Supabase. Every step below is manual and needs the owner's go-ahead.
 | Frontend | Vercel (Hobby) | `AuthBridgeWebApp/vercel.json` |
 | Database and Auth | the existing Supabase project | `DbTool`, `db/postgres/runtime-role.sql` |
 
+## Synthetic demo (zero configuration)
+
+`appsettings.json` defaults to `Auth:Mode=Demo`, so a Render service with **no environment
+variables** starts on its own:
+
+- Sign-in is the seeded demo-user picker at `/demo/users` and `/demo/token`. Anyone can pick a
+  user. Tokens are signed with `Auth__Demo__SigningKey`, or with a random per-process key when it
+  is unset.
+- The database is `DATABASE_URL` or `Database__ConnectionString` when set (the Blueprint's Render
+  Postgres, migrated and seeded on start). Otherwise it is an ephemeral SQLite file that is
+  recreated and reseeded on every start, so **data resets whenever the service restarts or
+  sleeps**.
+- CORS also accepts `https://*.vercel.app` and localhost.
+
+The Vercel build defaults to `https://authbridge-api.onrender.com`. If the Render URL differs,
+set `NG_APP_API_BASE_URL`, or enter the URL on the sign-in page. Synthetic data only. The
+Supabase path below is the real deployment: set `Auth__Mode=Supabase` and its settings.
+
 Check each provider's current free-tier terms before deploying. Free plans have quotas, and
 nothing here guarantees zero charges. Do not add paid add-ons, a second Render service or a
 background worker service.

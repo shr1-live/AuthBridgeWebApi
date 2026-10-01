@@ -6,10 +6,7 @@ using AuthBridge.Application;
 using AuthBridge.Application.Common;
 using AuthBridge.Application.Services;
 using AuthBridge.Infrastructure;
-using AuthBridge.Infrastructure.Persistence;
-using AuthBridge.Infrastructure.Seeding;
 using AuthBridge.Mcp.Tools;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Mvc;
 using ModelContextProtocol.Protocol;
@@ -28,6 +25,8 @@ if (string.IsNullOrWhiteSpace(builder.Configuration["Database:ConnectionString"]
 if (string.IsNullOrWhiteSpace(builder.Configuration["Database:Provider"])
     && AuthBridge.Infrastructure.DependencyInjection.IsPostgresUrl(builder.Configuration["Database:ConnectionString"] ?? ""))
     builder.Configuration["Database:Provider"] = "Postgres";
+// Demo mode with nothing configured: random signing key and an ephemeral SQLite database.
+DemoMode.ApplyDefaults(builder.Configuration);
 StartupConfiguration.Validate(builder.Configuration);
 
 builder.Services.AddAuthBridgeApplication(builder.Configuration);
@@ -66,14 +65,7 @@ if (builder.Configuration.GetValue("Simulation:Enabled", true))
 
 var app = builder.Build();
 
-if (authMode == AuthMode.Demo)
-{
-    await using var scope = app.Services.CreateAsyncScope();
-    var db = scope.ServiceProvider.GetRequiredService<AuthBridgeDbContext>();
-    await db.Database.MigrateAsync();
-    if (!await DatabaseSeeder.HasDataAsync(db, CancellationToken.None))
-        await DatabaseSeeder.SeedAsync(db, TimeProvider.System, CancellationToken.None);
-}
+await DemoMode.PrepareDatabaseAsync(app);
 
 app.UseSafeExceptionHandler();
 app.UseCorrelation();

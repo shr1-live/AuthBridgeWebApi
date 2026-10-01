@@ -35,7 +35,10 @@ public static class CorsSetup
 {
     public const string PolicyName = "authbridge-ui";
 
-    /// <summary>Exact origins only. A wildcard, a path or a non-http(s) scheme fails startup.</summary>
+    /// <summary>
+    /// Exact origins only. A wildcard, a path or a non-http(s) scheme fails startup. The synthetic
+    /// demo additionally accepts localhost and https://*.vercel.app.
+    /// </summary>
     public static void AddAuthBridgeCors(this WebApplicationBuilder builder)
     {
         var origins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
@@ -47,8 +50,10 @@ public static class CorsSetup
             return uri.GetLeftPart(UriPartial.Authority);
         }).ToArray();
 
+        var demo = Infrastructure.DemoMode.IsEnabled(builder.Configuration);
         builder.Services.AddCors(o => o.AddPolicy(PolicyName, p => p
-            .WithOrigins(normalized)
+            .SetIsOriginAllowed(origin => normalized.Contains(origin, StringComparer.OrdinalIgnoreCase)
+                || (demo && Infrastructure.DemoMode.IsDemoOrigin(origin)))
             .WithMethods("GET", "POST")
             .WithHeaders("Authorization", "Content-Type", "X-Correlation-Id", "Idempotency-Key")
             .WithExposedHeaders("X-Correlation-Id", "Location")

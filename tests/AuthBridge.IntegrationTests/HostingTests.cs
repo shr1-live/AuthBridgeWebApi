@@ -90,7 +90,8 @@ public class HostingTests(DatabaseProvider provider) : ProviderFixture(provider)
         {
             Assert.That(message, Does.Contain("Database__Provider"));
             Assert.That(message, Does.Contain("Database__ConnectionString"));
-            Assert.That(message, Does.Contain("Auth__Demo__SigningKey"));
+            Assert.That(message, Does.Contain("Auth__Supabase__Issuer"));
+            Assert.That(message, Does.Contain("Auth__Supabase__JwksUri"));
         });
     }
 
@@ -121,16 +122,19 @@ public class HostingTests(DatabaseProvider provider) : ProviderFixture(provider)
         {
             builder.UseEnvironment("Testing");
             builder.UseSetting("Database:Provider", "");
+            // A database is configured but the provider is not named: never guess one.
+            builder.UseSetting("Database:ConnectionString", "Host=localhost;Database=authbridge");
             builder.UseSetting("Simulation:Enabled", "false");
         }
     }
 
-    /// <summary>Like a fresh Render service with no environment variables: base appsettings only.</summary>
+    /// <summary>A real (Supabase) deployment with nothing else set. A bare demo starts: see DemoModeTests.</summary>
     private sealed class EmptyConfigApp : WebApplicationFactory<Program>
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder.UseEnvironment("Production");
+            builder.UseSetting("Auth:Mode", "Supabase");
             builder.UseSetting("Simulation:Enabled", "false");
         }
     }

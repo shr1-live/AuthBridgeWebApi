@@ -2,6 +2,7 @@ using AuthBridge.Application.Persistence;
 using AuthBridge.Domain;
 using AuthBridge.Domain.Entities;
 using Microsoft.Data.SqlClient;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
@@ -124,6 +125,7 @@ public sealed class EfAuthBridgeStore(AuthBridgeDbContext db) : IAuthBridgeStore
     {
         SqlException sql => sql.Number is 2601 or 2627,
         PostgresException pg => pg.SqlState == PostgresErrorCodes.UniqueViolation,
+        SqliteException lite => lite.SqliteErrorCode == 19, // SQLITE_CONSTRAINT (demo mode)
         _ => false,
     };
 }

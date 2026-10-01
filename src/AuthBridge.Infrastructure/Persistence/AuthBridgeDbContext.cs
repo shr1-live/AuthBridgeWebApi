@@ -2,6 +2,7 @@ using AuthBridge.Domain;
 using AuthBridge.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace AuthBridge.Infrastructure.Persistence;
 
@@ -24,6 +25,13 @@ public sealed class AuthBridgeDbContext(DbContextOptions<AuthBridgeDbContext> op
     public DbSet<SubmissionAttempt> Attempts => Set<SubmissionAttempt>();
     public DbSet<UserAccess> UserAccess => Set<UserAccess>();
     public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();
+
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        // SQLite (demo mode only) cannot order or compare DateTimeOffset; store it as sortable ticks.
+        if (Database.ProviderName == "Microsoft.EntityFrameworkCore.Sqlite")
+            configurationBuilder.Properties<DateTimeOffset>().HaveConversion<DateTimeOffsetToBinaryConverter>();
+    }
 
     protected override void OnModelCreating(ModelBuilder b)
     {

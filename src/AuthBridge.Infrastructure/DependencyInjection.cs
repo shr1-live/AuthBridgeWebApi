@@ -10,6 +10,8 @@ public enum DatabaseProvider
 {
     SqlServer,
     Postgres,
+    /// <summary>Ephemeral synthetic demo only; never used to prove provider behaviour.</summary>
+    Sqlite,
 }
 
 public sealed class DatabaseOptions
@@ -55,6 +57,7 @@ public static class DependencyInjection
             DatabaseProvider.Postgres => builder.UseNpgsql(WithPostgresDefaults(connectionString), o => o
                 .MigrationsAssembly(PostgresMigrationsAssembly)
                 .MigrationsHistoryTable("__EFMigrationsHistory", AuthBridgeDbContext.Schema)),
+            DatabaseProvider.Sqlite => builder.UseSqlite(connectionString),
             _ => throw new ArgumentOutOfRangeException(nameof(provider)),
         };
 
