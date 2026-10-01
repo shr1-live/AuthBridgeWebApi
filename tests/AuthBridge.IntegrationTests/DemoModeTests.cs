@@ -84,6 +84,18 @@ public class DemoModeTests
         Assert.That((await _app.CreateClient().GetAsync("/dev/users")).StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
     }
 
+    [Test]
+    public async Task Demo_sign_in_is_rate_limited_per_client_address()
+    {
+        using var client = _app.CreateClient();
+        client.DefaultRequestHeaders.Add("X-Forwarded-For", "203.0.113.9");
+        var codes = new List<HttpStatusCode>();
+        for (var i = 0; i < 31; i++)
+            codes.Add((await client.GetAsync("/demo/users")).StatusCode);
+        Assert.That(codes.Take(30), Has.All.EqualTo(HttpStatusCode.OK));
+        Assert.That(codes[^1], Is.EqualTo(HttpStatusCode.TooManyRequests));
+    }
+
     [TestCase("https://authbridge-web.vercel.app", true)]
     [TestCase("http://localhost:4200", true)]
     [TestCase("https://evil.example", false)]

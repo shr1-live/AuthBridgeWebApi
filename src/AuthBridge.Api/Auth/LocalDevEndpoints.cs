@@ -12,7 +12,7 @@ public sealed record DevTokenRequest(string SubjectId);
 /// </summary>
 public static class LocalDevEndpoints
 {
-    public static void MapLocalDevAuth(this WebApplication app, string prefix = "/dev")
+    public static RouteGroupBuilder MapLocalDevAuth(this WebApplication app, string prefix = "/dev")
     {
         var group = app.MapGroup(prefix).RequireCors(CorsSetup.PolicyName);
 
@@ -28,6 +28,7 @@ public static class LocalDevEndpoints
             var lifetime = TimeSpan.FromMinutes(30);
             return Results.Ok(new { accessToken = issuer.Issue(body.SubjectId, lifetime), expiresIn = (int)lifetime.TotalSeconds, tokenType = "bearer" });
         });
+        return group;
     }
 }
 

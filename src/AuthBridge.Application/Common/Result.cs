@@ -9,6 +9,8 @@ public enum ErrorKind
     NotFound,
     Conflict,
     Unprocessable,
+    /// <summary>A dependency (such as the assistant's model) is not configured or not reachable.</summary>
+    Unavailable,
 }
 
 public sealed record AppError(string Code, string Message, ErrorKind Kind);

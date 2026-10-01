@@ -28,9 +28,20 @@ Read-only additions the UI needs:
 | GET | `/requirements?payerCode&serviceCode&ruleVersion` | `GetRequiredDocumentsAsync` |
 | GET | `/document-fixtures` | The fixture allowlist (metadata only) |
 
+In-app assistant (see HOW_MCP_WORKS.md):
+
+| Method | Route | Success |
+| --- | --- | --- |
+| GET | `/assistant` | 200 `{enabled, model, tools[]}`. The tools come live from this server's own `/mcp` `tools/list` |
+| POST | `/assistant/messages` `{messages: [{role, text}]}` | 200 `{text, steps[], model}`. Each step is one MCP tool call: `{tool, input, ok, errorCode, result}` |
+
+The conversation alternates user and assistant, starts and ends with the user, has at most 20
+messages and at most 4000 characters each. The server keeps no chat state.
+
 Unauthenticated routes: `GET /health/live` (process only) and `GET /health/ready` (database,
 bounded to 5 s, returns 503 when unhealthy). `/dev/users` and `/dev/token` exist only in
-Development with `Auth:Mode=LocalDev`.
+Development with `Auth:Mode=LocalDev`. In `Auth:Mode=Demo` the same sign-in is at `/demo/users` and
+`/demo/token`, limited to 30 requests a minute per client address.
 
 GET never approves or submits. `GET /submission-proposals/{id}/approve` returns 405.
 
@@ -52,6 +63,8 @@ never include exception text, stack traces or SQL.
 | 404 | `NOT_FOUND` — missing record, or one in another tenant, with identical wording for both |
 | 409 | `VERSION_CONFLICT`, `INVALID_STATE`, `ALREADY_SUBMITTED`, `PROPOSAL_NOT_APPROVED`, `PROPOSAL_EXPIRED`, `PROPOSAL_CONSUMED`, `IDEMPOTENCY_CONFLICT` |
 | 422 | `MISSING_DOCUMENTS`, `CONFIGURATION_MISSING` |
+| 429 | `RATE_LIMITED` — demo sign-in (30 a minute per address) or assistant messages (per user per hour) |
+| 503 | `ASSISTANT_NOT_CONFIGURED` (no Anthropic key on the server), `ASSISTANT_UNAVAILABLE` (model unreachable or the daily cap reached) |
 | 500 | `INTERNAL_ERROR` — generic text; quote the correlation ID |
 
 ## Bounds

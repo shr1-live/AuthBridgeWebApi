@@ -9,6 +9,21 @@ The AI can **look things up and prepare the work**. A **person must approve** be
 is sent. Everything is a demo: the patients, the documents and the insurance company are all
 fake.
 
+## The pictures
+
+Seven diagrams, the same as the interview diagram page. The Mermaid versions further down show
+the same flows as text.
+
+| | |
+| --- | --- |
+| **1. Two doors, one brain**: the website and the AI share the same rules | ![Big picture](images/mcp-1-big-picture.png) |
+| **2. One tool call**: the six steps and the real JSON | ![One tool call](images/mcp-2-one-tool-call.png) |
+| **3. The toolbox**: 5 read tools, 3 action tools, no approve tool | ![Toolbox](images/mcp-3-toolbox.png) |
+| **4. The AUTH-104 journey**: who does what, top to bottom | ![AUTH-104 journey](images/mcp-4-auth-104-journey.png) |
+| **5. The life of a request**: statuses and who moves them | ![Request lifecycle](images/mcp-5-request-lifecycle.png) |
+| **6. The safety checks**: every question, and the error when the answer is no | ![Safety checks](images/mcp-6-safety-checks.png) |
+| **7. Local and remote MCP** | ![Local vs remote](images/mcp-7-local-vs-remote.png) |
+
 ## What is MCP?
 
 MCP (Model Context Protocol) is a standard way for an AI assistant to use tools.
@@ -172,6 +187,37 @@ flowchart LR
 
 The website and the AI use **the same server and the same rules**. The AI just uses tools
 instead of buttons.
+
+## The assistant inside the app
+
+The **Assistant** page in AuthBridge is a real MCP client of this server:
+
+```mermaid
+sequenceDiagram
+    actor You
+    participant UI as AuthBridge website
+    participant API as /api/v1/assistant
+    participant Claude
+    participant MCP as AuthBridge /mcp
+    You->>UI: What's missing on AUTH-104?
+    UI->>API: your message + your sign-in token
+    API->>MCP: tools/list (with your token)
+    API->>Claude: message + the 8 tools
+    Claude-->>API: call get_missing_documents(AUTH-104)
+    API->>MCP: tools/call (with your token)
+    MCP-->>API: { ok, isSimulation, data }
+    API->>Claude: tool result
+    Claude-->>API: "The referral letter is missing."
+    API-->>UI: answer + every tool call made
+```
+
+- The server connects to **its own `/mcp` endpoint** with your token, exactly like an external
+  AI would. Tenant and role are checked on every tool call.
+- The page shows each tool call: the input Claude chose and the result `/mcp` returned.
+- It can only use tools that `/mcp` lists. Anything else is refused, and there is still no
+  approve tool.
+- The Anthropic API key stays on the server (`Assistant__ApiKey`). Without it the page still
+  shows the live tool list, and chatting returns "not set up".
 
 ## Try it yourself (developers)
 

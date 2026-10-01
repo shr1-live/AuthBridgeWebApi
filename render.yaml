@@ -35,6 +35,9 @@ services:
         sync: false
       - key: Simulation__Enabled
         value: "true"
+      # Optional: turns on the in-app assistant. Server-side secret; never in git or the frontend.
+      - key: Assistant__ApiKey
+        sync: false
 
 databases:
   - name: authbridge-db

@@ -1,3 +1,4 @@
+using AuthBridge.Api.Assistant;
 using AuthBridge.Api.Auth;
 using AuthBridge.Api.Infrastructure;
 using AuthBridge.Api.Mcp;
@@ -33,6 +34,7 @@ builder.Services.AddAuthBridgeApplication(builder.Configuration);
 builder.Services.AddAuthBridgePersistence(builder.Configuration);
 var authMode = builder.AddAuthBridgeAuthentication();
 builder.AddAuthBridgeCors();
+builder.AddAuthBridgeAssistant();
 
 builder.Services
     .AddControllers()
@@ -79,6 +81,7 @@ app.Use(async (context, next) =>
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 
 app.MapGet("/health/live", () => Results.Ok(new { status = "live" })).AllowAnonymous();
 app.MapHealthChecks("/health/ready", new HealthCheckOptions
@@ -97,7 +100,7 @@ if (authMode == AuthMode.LocalDev && app.Environment.IsDevelopment())
 }
 else if (authMode == AuthMode.Demo)
 {
-    app.MapLocalDevAuth("/demo");
+    app.MapLocalDevAuth("/demo").RequireRateLimiting(AssistantSetup.DemoSignInPolicy);
 }
 
 app.Run();

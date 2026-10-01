@@ -1,7 +1,9 @@
 # Deployment
 
-**Status: prepared, not deployed.** Nothing in this repository has been published to Render,
-Vercel or Supabase. Every step below is manual and needs the owner's go-ahead.
+**Status: deployed as the synthetic demo.** The backend runs on Render
+(`https://authbridgewebapi.onrender.com`) and the frontend on Vercel
+(`https://auth-bridge-web-app.vercel.app`), both deployed automatically from `main`. The Supabase
+path below is still prepared but not in use.
 
 | Piece | Host | Artifact |
 | --- | --- | --- |
@@ -22,6 +24,10 @@ variables** starts on its own:
   recreated and reseeded on every start, so **data resets whenever the service restarts or
   sleeps**.
 - CORS also accepts `https://*.vercel.app` and localhost.
+- The in-app assistant is off until you add an Anthropic API key on Render: **service → Environment
+  → `Assistant__ApiKey`** (the key stays on the server and never reaches the browser). Optional:
+  `Assistant__Model` (default `claude-sonnet-5-5`), `Assistant__PerUserHourlyLimit` (30) and
+  `Assistant__DailyLimit` (300), which caps spend on the public demo.
 
 The Vercel build defaults to `https://authbridgewebapi.onrender.com`. If the Render URL differs,
 set `NG_APP_API_BASE_URL`, or enter the URL on the sign-in page. Synthetic data only. The
