@@ -51,7 +51,7 @@ public sealed class SeedSnapshot
 }
 
 /// <summary>
-/// Deterministic synthetic fixture set: 20 requests across two tenants. IDs are derived
+/// Deterministic synthetic fixture set: 34 requests across two tenants (20 in A, 14 in B). IDs are derived
 /// from names so every reseed produces the same identifiers. Historic timestamps are fixed;
 /// only the live stale-version proposal is anchored to the seeding clock.
 /// </summary>
@@ -64,6 +64,8 @@ public static class SeedData
     public const string Physio = "DEMO-PHYSIO";
     public const string Surgery = "DEMO-SURGERY";
     public const string Specialist = "DEMO-SPECIALIST";
+    public const string Ultrasound = "DEMO-ULTRASOUND";
+    public const string Rehab = "DEMO-REHAB";
 
     private static readonly DateTimeOffset Base = new(2026, 9, 1, 9, 0, 0, TimeSpan.Zero);
     private const string SeedActor = "system:seed";
@@ -75,6 +77,8 @@ public static class SeedData
         [Physio] = [DocumentTypes.ReferralLetter, DocumentTypes.TreatmentSummary],
         [Surgery] = [DocumentTypes.ReferralLetter, DocumentTypes.TreatmentSummary],
         [Specialist] = [DocumentTypes.ReferralLetter],
+        [Ultrasound] = [DocumentTypes.ReferralLetter, DocumentTypes.ImagingReport],
+        [Rehab] = [DocumentTypes.ReferralLetter, DocumentTypes.TreatmentSummary],
     };
 
     private sealed record Fixture(
@@ -95,6 +99,15 @@ public static class SeedData
         new("AUTH-110", SeedUsers.TenantA, 1, PayerA, Surgery, AuthorizationStatus.ReadyToSubmit, DemoScenario.FailOnceThenApprove, ["FX-REFERRAL-SIGNED", "FX-TREATMENT-COMPLETE"]),
         new("AUTH-111", SeedUsers.TenantA, 2, PayerB, Surgery, AuthorizationStatus.AwaitingDocuments, DemoScenario.Approve, ["FX-REFERRAL-SIGNED", "FX-TREATMENT-INCOMPLETE"]),
         new("AUTH-112", SeedUsers.TenantA, 3, PayerB, Ct, AuthorizationStatus.Denied, DemoScenario.Deny, ["FX-REFERRAL-SIGNED", "FX-IMAGING-CURRENT"]),
+        // More everyday cases: a fresh draft, an out-of-date scan, an unsigned referral, and each outcome.
+        new("AUTH-113", SeedUsers.TenantA, 7, PayerA, Ultrasound, AuthorizationStatus.Draft, DemoScenario.Approve, []),
+        new("AUTH-114", SeedUsers.TenantA, 1, PayerB, Ultrasound, AuthorizationStatus.AwaitingDocuments, DemoScenario.Approve, ["FX-REFERRAL-SIGNED", "FX-IMAGING-EXPIRED"]),
+        new("AUTH-115", SeedUsers.TenantA, 7, PayerA, Rehab, AuthorizationStatus.ReadyToSubmit, DemoScenario.Approve, ["FX-REFERRAL-SIGNED", "FX-TREATMENT-COMPLETE"]),
+        new("AUTH-116", SeedUsers.TenantA, 2, PayerB, Rehab, AuthorizationStatus.AwaitingDocuments, DemoScenario.Approve, ["FX-REFERRAL-UNSIGNED", "FX-TREATMENT-COMPLETE"]),
+        new("AUTH-117", SeedUsers.TenantA, 3, PayerA, Mri, AuthorizationStatus.ReadyToSubmit, DemoScenario.Deny, ["FX-REFERRAL-SIGNED", "FX-IMAGING-CURRENT"]),
+        new("AUTH-118", SeedUsers.TenantA, 7, PayerB, Specialist, AuthorizationStatus.Approved, DemoScenario.Approve, ["FX-REFERRAL-SIGNED"]),
+        new("AUTH-119", SeedUsers.TenantA, 1, PayerA, Physio, AuthorizationStatus.Denied, DemoScenario.Deny, ["FX-REFERRAL-SIGNED", "FX-TREATMENT-COMPLETE"]),
+        new("AUTH-120", SeedUsers.TenantA, 2, PayerA, Ultrasound, AuthorizationStatus.ReadyToSubmit, DemoScenario.FailOnceThenApprove, ["FX-REFERRAL-SIGNED", "FX-IMAGING-CURRENT"]),
         new("AUTH-201", SeedUsers.TenantB, 4, PayerA, Specialist, AuthorizationStatus.Draft, DemoScenario.Approve, []),
         new("AUTH-202", SeedUsers.TenantB, 5, PayerB, Mri, AuthorizationStatus.AwaitingDocuments, DemoScenario.Approve, ["FX-REFERRAL-SIGNED"]),
         new("AUTH-203", SeedUsers.TenantB, 6, PayerA, Ct, AuthorizationStatus.ReadyToSubmit, DemoScenario.Approve, ["FX-REFERRAL-SIGNED", "FX-IMAGING-CURRENT"]),
@@ -103,6 +116,12 @@ public static class SeedData
         new("AUTH-206", SeedUsers.TenantB, 6, PayerA, Surgery, AuthorizationStatus.Draft, DemoScenario.Approve, []),
         new("AUTH-207", SeedUsers.TenantB, 4, PayerB, Specialist, AuthorizationStatus.AwaitingDocuments, DemoScenario.Approve, ["FX-REFERRAL-UNSIGNED"]),
         new("AUTH-208", SeedUsers.TenantB, 5, PayerA, Surgery, AuthorizationStatus.ReadyToSubmit, DemoScenario.FailOnceThenApprove, ["FX-REFERRAL-SIGNED", "FX-TREATMENT-COMPLETE"]),
+        new("AUTH-209", SeedUsers.TenantB, 8, PayerB, Ultrasound, AuthorizationStatus.ReadyToSubmit, DemoScenario.Approve, ["FX-REFERRAL-SIGNED", "FX-IMAGING-CURRENT"]),
+        new("AUTH-210", SeedUsers.TenantB, 9, PayerA, Rehab, AuthorizationStatus.Draft, DemoScenario.Approve, []),
+        new("AUTH-211", SeedUsers.TenantB, 10, PayerA, Ct, AuthorizationStatus.AwaitingDocuments, DemoScenario.Approve, ["FX-REFERRAL-SIGNED", "FX-IMAGING-EXPIRED"]),
+        new("AUTH-212", SeedUsers.TenantB, 8, PayerB, Rehab, AuthorizationStatus.Approved, DemoScenario.Approve, ["FX-REFERRAL-SIGNED", "FX-TREATMENT-COMPLETE"]),
+        new("AUTH-213", SeedUsers.TenantB, 9, PayerB, Mri, AuthorizationStatus.Denied, DemoScenario.Deny, ["FX-REFERRAL-SIGNED", "FX-IMAGING-CURRENT"]),
+        new("AUTH-214", SeedUsers.TenantB, 10, PayerA, Specialist, AuthorizationStatus.ReadyToSubmit, DemoScenario.Approve, ["FX-REFERRAL-SIGNED"]),
     ];
 
     public static SeedSnapshot Build(DateTimeOffset now)
@@ -110,10 +129,11 @@ public static class SeedData
         var s = new SeedSnapshot();
 
         // Synthetic member codes, deliberately not name-like.
-        string[] memberCodes = ["SYN-2904", "SYN-6612", "SYN-3388", "SYN-4471", "SYN-5120", "SYN-7731"];
-        for (var i = 1; i <= 6; i++)
+        // Members 1-3 and 7 are tenant A; 4-6 and 8-10 are tenant B.
+        string[] memberCodes = ["SYN-2904", "SYN-6612", "SYN-3388", "SYN-4471", "SYN-5120", "SYN-7731", "SYN-8015", "SYN-1293", "SYN-9046", "SYN-2257"];
+        for (var i = 1; i <= memberCodes.Length; i++)
         {
-            var tenant = i <= 3 ? SeedUsers.TenantA : SeedUsers.TenantB;
+            var tenant = i is <= 3 or 7 ? SeedUsers.TenantA : SeedUsers.TenantB;
             s.Members.Add(new SyntheticMember
             {
                 Id = SeedIds.For("member:" + i),

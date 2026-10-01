@@ -36,9 +36,9 @@ public class PersistenceTests(DatabaseProvider provider) : ProviderFixture(provi
         await using var db = App.Db();
         Assert.Multiple(async () =>
         {
-            Assert.That(await db.Requests.CountAsync(), Is.EqualTo(20));
-            Assert.That(await db.Requests.CountAsync(r => r.TenantId == SeedUsers.TenantA), Is.EqualTo(12));
-            Assert.That(await db.Requests.CountAsync(r => r.TenantId == SeedUsers.TenantB), Is.EqualTo(8));
+            Assert.That(await db.Requests.CountAsync(), Is.EqualTo(34));
+            Assert.That(await db.Requests.CountAsync(r => r.TenantId == SeedUsers.TenantA), Is.EqualTo(20));
+            Assert.That(await db.Requests.CountAsync(r => r.TenantId == SeedUsers.TenantB), Is.EqualTo(14));
             Assert.That((await db.Requests.SingleAsync(r => r.PublicId == "AUTH-104")).Id, Is.EqualTo(SeedIds.Request("AUTH-104")));
             Assert.That((await db.Requests.SingleAsync(r => r.PublicId == "AUTH-109")).Status, Is.EqualTo(AuthorizationStatus.Approved));
             Assert.That((await db.Attempts.SingleAsync(a => a.Id == SeedIds.Attempt("AUTH-107"))).State, Is.EqualTo(AttemptState.Queued));

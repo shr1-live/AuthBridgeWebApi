@@ -114,7 +114,7 @@ public class IdentityAndAccessTests(DatabaseProvider provider) : ProviderFixture
     {
         var list = await (await CoordinatorB.GetAsync("/api/v1/authorizations?pageSize=100")).JsonAsync();
         var ids = list.GetProperty("items").EnumerateArray().Select(i => i.Str("authorizationId")).ToList();
-        Assert.That(ids, Has.Count.EqualTo(8));
+        Assert.That(ids, Has.Count.EqualTo(14));
         Assert.That(ids, Has.All.StartWith("AUTH-2"));
     }
 
@@ -146,7 +146,8 @@ public class IdentityAndAccessTests(DatabaseProvider provider) : ProviderFixture
         }
         Assert.That(await VersionAsync("AUTH-104", ViewerA), Is.EqualTo(version));
         await using var db = App.Db();
-        Assert.That(await db.Proposals.CountAsync(), Is.EqualTo(4), "no proposal created by the viewer");
+        // Seeded: one per decided or in-flight request (7) plus the stale AUTH-103 proposal.
+        Assert.That(await db.Proposals.CountAsync(), Is.EqualTo(8), "no proposal created by the viewer");
     }
 
     [Test]

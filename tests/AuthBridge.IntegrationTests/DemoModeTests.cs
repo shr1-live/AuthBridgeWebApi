@@ -60,7 +60,7 @@ public class DemoModeTests
 
         var client = await SignedInAsync(AuthBridge.Infrastructure.Seeding.SeedUsers.CoordinatorA);
         var list = await (await client.GetAsync("/api/v1/authorizations?pageSize=100")).JsonAsync();
-        Assert.That(list.GetProperty("total").GetInt32(), Is.EqualTo(12));
+        Assert.That(list.GetProperty("total").GetInt32(), Is.EqualTo(20));
     }
 
     [Test]

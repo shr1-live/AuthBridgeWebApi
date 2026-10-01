@@ -31,16 +31,23 @@ Leave `NG_APP_SUPABASE_*` unset and the login page offers the backend's Developm
 | AUTH-110 | A | ReadyToSubmit, **FailOnceThenApprove** (retry shown in progress) |
 | AUTH-111 | A | Has an invalid TreatmentSummary |
 | AUTH-112 | A | Terminal Denied |
-| AUTH-201…208 | B | Tenant B. **AUTH-204** mirrors 104 and is invisible to tenant A |
+| AUTH-113 | A | Ultrasound scan, fresh draft |
+| AUTH-114 | A | Ultrasound scan, imaging report **out of date** (FX-IMAGING-EXPIRED) |
+| AUTH-115 | A | Rehab programme, ReadyToSubmit → approves |
+| AUTH-116 | A | Rehab programme, referral letter **unsigned** |
+| AUTH-117 | A | MRI scan, ReadyToSubmit → simulator **denies** |
+| AUTH-118, AUTH-119 | A | Terminal Approved / Denied |
+| AUTH-120 | A | Ultrasound scan, ReadyToSubmit, **FailOnceThenApprove** |
+| AUTH-201…214 | B | Tenant B. **AUTH-204** mirrors 104 and is invisible to tenant A |
 
 Users: Demo Coordinator (A), Demo Viewer (A), Demo Coordinator (B), Second Coordinator (A),
 and an inactive coordinator.
 
 ## Walkthrough
 
-1. Sign in as **Demo Viewer (Tenant A)**. The list shows 12 requests. On AUTH-104 there are no
+1. Sign in as **Demo Viewer (Tenant A)**. The list shows 20 requests. On AUTH-104 there are no
    action buttons ("read-only access"). Sign out.
-2. Sign in as **Demo Coordinator (Tenant A)**. Filter Status = ReadyToSubmit: 4 results.
+2. Sign in as **Demo Coordinator (Tenant A)**. Filter Status = Ready to submit: 7 results.
 3. Open `/authorizations/AUTH-204`. It shows "Not found", exactly like a missing ID.
 4. Open **AUTH-104**. The checklist shows ReferralLetter missing. Attach `FX-REFERRAL-SIGNED`,
    then **Validate**: AwaitingDocuments → ReadyToSubmit, and the timeline gains the transition.

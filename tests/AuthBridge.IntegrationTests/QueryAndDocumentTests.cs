@@ -73,18 +73,18 @@ public class QueryAndDocumentTests(DatabaseProvider provider) : ProviderFixture(
     [Test]
     public async Task List_paginates_and_filters_within_tenant()
     {
-        var page1 = await (await CoordinatorA.GetAsync("/api/v1/authorizations?page=1&pageSize=5")).JsonAsync();
-        var page3 = await (await CoordinatorA.GetAsync("/api/v1/authorizations?page=3&pageSize=5")).JsonAsync();
+        var page1 = await (await CoordinatorA.GetAsync("/api/v1/authorizations?page=1&pageSize=6")).JsonAsync();
+        var page4 = await (await CoordinatorA.GetAsync("/api/v1/authorizations?page=4&pageSize=6")).JsonAsync();
         Assert.Multiple(() =>
         {
-            Assert.That(page1.GetProperty("total").GetInt32(), Is.EqualTo(12));
-            Assert.That(page1.GetProperty("items").GetArrayLength(), Is.EqualTo(5));
-            Assert.That(page3.GetProperty("items").GetArrayLength(), Is.EqualTo(2));
+            Assert.That(page1.GetProperty("total").GetInt32(), Is.EqualTo(20));
+            Assert.That(page1.GetProperty("items").GetArrayLength(), Is.EqualTo(6));
+            Assert.That(page4.GetProperty("items").GetArrayLength(), Is.EqualTo(2));
         });
 
         var ready = await (await CoordinatorA.GetAsync("/api/v1/authorizations?status=ReadyToSubmit&pageSize=100")).JsonAsync();
         Assert.That(ready.GetProperty("items").EnumerateArray().Select(i => i.Str("authorizationId")),
-            Is.EquivalentTo(new[] { "AUTH-103", "AUTH-105", "AUTH-106", "AUTH-110" }));
+            Is.EquivalentTo(new[] { "AUTH-103", "AUTH-105", "AUTH-106", "AUTH-110", "AUTH-115", "AUTH-117", "AUTH-120" }));
     }
 
     [Test]
@@ -98,6 +98,7 @@ public class QueryAndDocumentTests(DatabaseProvider provider) : ProviderFixture(
             Assert.That(rows["AUTH-104"].GetProperty("validDocumentCount").GetInt32(), Is.EqualTo(1));
             Assert.That(rows["AUTH-105"].GetProperty("validDocumentCount").GetInt32(), Is.EqualTo(2));
             Assert.That(rows["AUTH-111"].GetProperty("validDocumentCount").GetInt32(), Is.EqualTo(1), "invalid fixture does not count");
+            Assert.That(rows["AUTH-114"].GetProperty("validDocumentCount").GetInt32(), Is.EqualTo(1), "an expired scan does not count");
             Assert.That(rows["AUTH-104"].Str("memberLabel"), Does.Match("^SYN-[0-9]{4}$"));
         });
     }
