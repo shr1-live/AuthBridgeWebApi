@@ -50,6 +50,25 @@ Both ways use **the same eight tools** and **the same rules**.
 
 **There is no "approve" tool.** The AI can never approve. That is on purpose.
 
+## What happens in one tool call
+
+```mermaid
+sequenceDiagram
+    participant AI as AI assistant
+    participant MCP as AuthBridge /mcp
+    participant Svc as Application services
+    participant DB as Database
+    AI->>MCP: tools/call get_missing_documents(AUTH-104)<br/>+ the user's sign-in token
+    MCP->>MCP: Check the token signature and expiry
+    MCP->>DB: Look up UserAccess (tenant, role)
+    MCP->>Svc: Same service the website calls
+    Svc->>DB: Read AUTH-104 in this tenant only
+    Svc-->>MCP: missing: ReferralLetter
+    MCP-->>AI: { ok: true, isSimulation: true, data }
+```
+
+The tenant and role come from the server's own lookup, never from what the AI typed.
+
 ## One request, step by step
 
 Example: request **AUTH-104** needs an MRI, but a referral letter is missing.
@@ -69,6 +88,44 @@ Example: request **AUTH-104** needs an MRI, but a referral letter is missing.
 7. **You ask the AI:** "Is it decided?"
    The AI uses `get_submission_status`. After a few seconds the answer is **Approved**.
 
+```mermaid
+sequenceDiagram
+    actor You
+    participant AI as AI assistant
+    participant AB as AuthBridge
+    participant Payer as Payer simulator
+    You->>AI: What's missing on AUTH-104?
+    AI->>AB: get_missing_documents
+    AB-->>AI: ReferralLetter missing
+    You->>AB: Attach the referral letter (website)
+    AI->>AB: validate_authorization_request
+    AB-->>AI: Ready to submit
+    AI->>AB: prepare_authorization_submission
+    AB-->>You: Review link (valid 5 minutes)
+    Note over You,AB: Only a person can approve. There is no approve tool.
+    You->>AB: Approve (website click)
+    AI->>AB: submit_authorization_request + idempotency key
+    AB->>Payer: Send (simulated)
+    Payer-->>AB: Under review, then Approved
+    AI->>AB: get_submission_status
+    AB-->>AI: Completed, Approved
+    AI-->>You: AUTH-104 was approved
+```
+
+## The life of a request
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> Draft
+    Draft --> AwaitingDocuments: person attaches documents
+    AwaitingDocuments --> ReadyToSubmit: validate (AI or person)
+    ReadyToSubmit --> Submitted: prepare, person approves, submit
+    Submitted --> UnderReview: payer simulator
+    UnderReview --> Approved
+    UnderReview --> Denied
+```
+
 ## How it stays safe
 
 - **You must sign in.** The server checks who you are on every request.
@@ -83,13 +140,34 @@ Example: request **AUTH-104** needs an MRI, but a referral letter is missing.
   approval stops working and a new one is needed.
 - **Every answer says it is a simulation.** Tool results include `isSimulation: true`.
 
+```mermaid
+flowchart TD
+    A[Tool call arrives] --> B{Signed in?}
+    B -- no --> X1[401]
+    B -- yes --> C{Known, active user?}
+    C -- no --> X2[ACCESS_NOT_PROVISIONED]
+    C -- yes --> D{Your tenant's record?}
+    D -- no --> X3[NOT_FOUND, nothing leaks]
+    D -- yes --> E{Role allows changes?}
+    E -- no --> X4[FORBIDDEN]
+    E -- yes --> F{Version still current?}
+    F -- no --> X5[VERSION_CONFLICT]
+    F -- yes --> G{Approved by a person, in time?}
+    G -- no --> X6[PROPOSAL_NOT_APPROVED / EXPIRED]
+    G -- yes --> H[Run the service]
+```
+
 ## How the pieces fit together
 
-```
-You  ──►  AuthBridge website  ──┐
-                                ├──►  AuthBridge server  ──►  database
-AI assistant  ──►  MCP tools  ──┘         │
-                                          └──►  pretend insurer (decides after a few seconds)
+```mermaid
+flowchart LR
+    You([Coordinator]) --> Web[Angular website]
+    AI([AI assistant]) --> MCP["/mcp: 8 tools"]
+    Web --> API["REST API /api/v1"]
+    API --> Svc[Application services<br/>the same rules for both]
+    MCP --> Svc
+    Svc --> DB[(SQL Server or PostgreSQL)]
+    Svc --> Sim[Payer simulator<br/>background worker]
 ```
 
 The website and the AI use **the same server and the same rules**. The AI just uses tools
@@ -110,6 +188,6 @@ For the technical details, see [TOOL_CONTRACTS.md](TOOL_CONTRACTS.md) and
 
 ## What is not done yet
 
-- The remote MCP runs on your laptop only. It is not on the internet yet.
 - AI apps like Claude or ChatGPT cannot yet connect by themselves with a login screen.
-  Today they need a sign-in token supplied to them.
+  Today they need a sign-in token supplied to them. The remote MCP runs on Render at `/mcp`
+  and accepts the same demo tokens as the website.
